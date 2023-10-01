@@ -92,7 +92,7 @@ jobs:
         context: ./app
         push: true
         tags: lironderi/market-app:v1.0.${{ github.run_id }}
-      id: Build_and_push_Docker_image
+      id: Build_push
 
     - name: Notify on failure
       if: ${{ failure() }}
@@ -100,7 +100,7 @@ jobs:
       with:
         to: danielsagie688@gmail.com
         subject: CI failed on ${{ github.workflow }}
-        body: The ${{ github.workflow }} workflow failed on step ${{ steps.install.outcome }}. 
+        body: The ${{ github.workflow }} workflow failed on step ${{ steps.Build_push.outputs.outcome }}. 
 
     - name: Trigger ArgoCD Sync
       run: |
