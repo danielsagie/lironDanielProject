@@ -1,116 +1,99 @@
-name: CI #test3
-on:
-  push:
-  pull_request:
-
-jobs:
-  running_tests:
-    strategy:
-      matrix: 
-        os: [ ubuntu-latest ]
-        python-version:
-          - "3.9"
-    name: TESTS
-    runs-on: ${{ matrix.os }}
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: mongo-svc
-      uses: art049/mongodb-cluster-action@v0
-
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install --upgrade -r app/requirements.txt
-        pip install pytest
-
-    - name: Notify on failure
-      if: ${{ failure() }}
-      uses: cinotify/github-action@main  
-      with:
-        to: danielsagie688@gmail.com
-        subject: CI failed on ${{ github.workflow }}
-        body: The ${{ github.workflow }} workflow failed on step ${{ steps.install.outcome }}. 
-
-
-    - name: Run the application
-      run: |
-        cd app
-        export FLASK_APP=main.py
-        echo "hello world!"
-        flask run &
-    
-    - name: ls
-      run: ls
-      
-
-    - name: Run Python tests
-      run: pytest
-
-    - name: Notify on failure
-      if: ${{ failure() }}
-      uses: cinotify/github-action@main  
-      with:
-        to: danielsagie688@gmail.com
-        subject: CI failed on ${{ github.workflow }}
-        body: The ${{ github.workflow }} workflow failed on step ${{ steps.install.outcome }}. 
-
-
-
-  docker_build_and_push:
-    needs: running_tests  
+---
+  name: CI
+  on:
+    push: null
+    pull_request: null
+  jobs:
+    running_tests:
+      strategy:
+        matrix:
+          os:
+            - ubuntu-latest
+          python-version:
+            - "3.9"
+      name: TESTS
+      runs-on: ${{ matrix.os }}
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+        - name: Set up Python
+          uses: actions/setup-python@v4
+          with:
+            python-version: ${{ matrix.python-version }}
+        - name: mongo-svc
+          uses: art049/mongodb-cluster-action@v0
+        - name: Install Dependencies
+          run: |
+            python -m pip install --upgrade pip
+            pip install --upgrade -r app/requirements.txt
+            pip install pytest
+        - name: Notify on failure
+          if: ${{ failure() }}
+          uses: cinotify/github-action@main
+          with:
+            to: danielsagie688@gmail.com
+            subject: CI failed on ${{ github.workflow }}
+            body: The ${{ github.workflow }} workflow failed on step ${{
+              steps.install.outcome }}.
+        - name: Run the application
+          run: |
+            cd app
+            export FLASK_APP=main.py
+            echo "hello world!"
+            flask run &
+        - name: ls
+          run: ls
+        - name: Run Python tests
+          run: pytest
+    docker_build_and_push:
+      needs: running_tests
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+        - name: Log in to Docker Hub
+          uses: docker/login-action@v1
+          with:
+            username: ${{ secrets.DOCKERHUB_USERNAME }}
+            password: ${{ secrets.DOCKERHUB_TOKEN }}
+        - name: Build and push Docker image
+          uses: docker/build-push-action@v2
+          with:
+            context: ./app
+            push: true
+            tags: lironderi/market-app:v1.0.${{ github.run_id }}
+          id: Build_push
+        - name: Trigger ArgoCD Sync
+          run: >
+            git clone https://github.com/lironderi/project_conf
+  
+            git config --global user.email "liron.deri3@outlook.com"
+  
+            git config --global user.name "lironderi"
+  
+            pwd
+  
+            cd project_conf
+  
+            sed -i "s|image: lironderi/market-app:v1.0.*|image: lironderi/market-app:v1.0.${{ github.run_id }}|" k8s_conf/deployment.yaml
+  
+            git add k8s_conf/deployment.yaml
+  
+            git commit -m "Trigger ArgoCD Sync"
+  
+            git push https://${{ secrets.GH_PAT }}@github.com/lironderi/project_conf
+            
+  notify:
+    needs:
+      - running_tests
+      - docker_build_and_push
+    if: ${{ failure() }}
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-    - name: Notify on failure
-      if: ${{ failure() }}
-      uses: cinotify/github-action@main  
-      with:
-        to: danielsagie688@gmail.com
-        subject: CI failed on ${{ github.workflow }}
-        body: The ${{ github.workflow }} workflow failed on step ${{ steps.install.outcome }}.
-
-
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v2
-      with:
-        context: ./app
-        push: true
-        tags: lironderi/market-app:v1.0.${{ github.run_id }}
-      id: Build_push
-
-    - name: Notify on failure
-      if: ${{ failure() }}
-      uses: cinotify/github-action@main  
-      with:
-        to: danielsagie688@gmail.com
-        subject: CI failed on ${{ github.workflow }}
-        body: |
-         The ${{ github.workflow }} workflow failed on Build and push Docker image
-    - name: Trigger ArgoCD Sync
-      run: |
-        git clone https://github.com/lironderi/project_conf
-        git config --global user.email "liron.deri3@outlook.com"
-        git config --global user.name "lironderi"
-        pwd
-        cd project_conf
-        sed -i "s|image: lironderi/market-app:v1.0.*|image: lironderi/market-app:v1.0.${{ github.run_id }}|" k8s_conf/deployment.yaml
-        git add k8s_conf/deployment.yaml
-        git commit -m "Trigger ArgoCD Sync"
-        git push https://${{ secrets.GH_PAT }}@github.com/lironderi/project_conf
+      - name: Send failure notification
+        uses: cinotify/github-action@main
+        with:
+          to: danielsagie688@gmail.com
+          subject: Workflow failed
+          body: The workflow failed, please check this on github actions
+  
