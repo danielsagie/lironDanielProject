@@ -102,7 +102,7 @@ jobs:
         to: danielsagie688@gmail.com
         subject: CI failed on ${{ github.workflow }}
         body: |
-         The ${{ github.workflow }} workflow failed on step ${{ steps.build-push.outputs.outcome }}
+         The ${{ github.workflow }} workflow failed on Build and push Docker image
     - name: Trigger ArgoCD Sync
       run: |
         git clone https://github.com/lironderi/project_conf
