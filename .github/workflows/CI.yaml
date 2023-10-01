@@ -82,18 +82,18 @@
             git commit -m "Trigger ArgoCD Sync"
   
             git push https://${{ secrets.GH_PAT }}@github.com/lironderi/project_conf
-            
-  notify:
-    needs:
-      - running_tests
-      - docker_build_and_push
-    if: ${{ failure() }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Send failure notification
-        uses: cinotify/github-action@main
-        with:
-          to: danielsagie688@gmail.com
-          subject: Workflow failed
-          body: The workflow failed, please check this on github actions
-  
+
+    notify:
+      needs:
+        - running_tests
+        - docker_build_and_push
+      if: ${{ failure() }}
+      runs-on: ubuntu-latest
+      steps:
+        - name: Send failure notification
+          uses: cinotify/github-action@main
+          with:
+            to: danielsagie688@gmail.com
+            subject: Workflow failed
+            body: The workflow failed, please check this on github actions
+    
