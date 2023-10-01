@@ -31,6 +31,15 @@ jobs:
         pip install --upgrade -r app/requirements.txt
         pip install pytest
 
+    - name: Notify on failure
+      if: ${{ failure() }}
+      uses: cinotify/github-action@main  
+      with:
+        to: danielsagie688@gmail.com
+        subject: CI failed on ${{ github.workflow }}
+        body: The ${{ github.workflow }} workflow failed on step ${{ steps.install.outcome }}. 
+
+
     - name: Run the application
       run: |
         cd app
@@ -45,8 +54,16 @@ jobs:
     - name: Run Python tests
       run: pytest
 
+    - name: Notify on failure
+      if: ${{ failure() }}
+      uses: cinotify/github-action@main  
+      with:
+        to: danielsagie688@gmail.com
+        subject: CI failed on ${{ github.workflow }}
+        body: The ${{ github.workflow }} workflow failed on step ${{ steps.install.outcome }}. 
 
-      
+
+
   docker_build_and_push:
     needs: running_tests  
     runs-on: ubuntu-latest
@@ -60,6 +77,14 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+        
+    - name: Notify on failure
+      if: ${{ failure() }}
+      uses: cinotify/github-action@main  
+      with:
+        to: danielsagie688@gmail.com
+        subject: CI failed on ${{ github.workflow }}
+        body: The ${{ github.workflow }} workflow failed on step ${{ steps.install.outcome }}.
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v2
@@ -68,6 +93,14 @@ jobs:
         push: true
         tags: lironderi/market-app:v1.0.${{ github.run_id }}
 
+    - name: Notify on failure
+      if: ${{ failure() }}
+      uses: cinotify/github-action@main  
+      with:
+        to: danielsagie688@gmail.com
+        subject: CI failed on ${{ github.workflow }}
+        body: The ${{ github.workflow }} workflow failed on step ${{ steps.install.outcome }}. 
+
     - name: Trigger ArgoCD Sync
       run: |
         git clone https://github.com/lironderi/project_conf
@@ -75,9 +108,7 @@ jobs:
         git config --global user.name "lironderi"
         pwd
         cd project_conf
-        echo "Trigger change" >> trigger.txt
         sed -i "s|image: lironderi/market-app:v1.0.*|image: lironderi/market-app:v1.0.${{ github.run_id }}|" k8s_conf/deployment.yaml
-        git add trigger.txt
         git add k8s_conf/deployment.yaml
         git commit -m "Trigger ArgoCD Sync"
         git push https://${{ secrets.GH_PAT }}@github.com/lironderi/project_conf
