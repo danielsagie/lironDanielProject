@@ -12,9 +12,11 @@ class CustomJSONEncoder(JSONEncoder):
         return super().default(obj)
 
 app = Flask(__name__)
-app.secret_key = 'fakekey'
-MONGO_URI=os.environ.get('MONGO_URI')
 app.json_encoder = CustomJSONEncoder
+app.secret_key = 'fakekey'
+
+MONGO_URI=os.environ.get('MONGO_URI')
+
 try:
     client = MongoClient(MONGO_URI)  
     db = client['Website_db']
@@ -220,10 +222,12 @@ def delete_list(list_id):
 
     return jsonify({'message': 'List not found'}), 404
 
-def create_app(app):
+def start_app():
     if __name__ == '__main__':
         port = int(os.environ.get('PORT', 5000))
-        app.run(debug=True, host="0.0.0.0", port=port)
-
+        # For production, ensure that debug is set to False
+        app.run(debug=False, host="0.0.0.0", port=port)
+        
+start_app()
 
 #test3
