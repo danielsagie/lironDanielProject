@@ -73,6 +73,12 @@ jobs:
 
           pwd
 
+          git fetch origin
+      
+          git checkout master
+      
+          git rebase origin/master
+
           cd project_conf
 
           sed -i "s|image: lironderi/market-app:v1.0.*|image: lironderi/market-app:v1.0.${{ github.run_id }}|" k8s_conf/deployment.yaml
