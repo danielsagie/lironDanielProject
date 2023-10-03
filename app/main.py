@@ -79,6 +79,7 @@ def login_page():
 
 # function that check if user exist and create a session
 @app.route('/login', methods=['POST'])
+@app.route('/login', methods=['POST'])
 def login():
     username = request.form.get('username')
     password = hashlib.sha256(request.form.get('password').encode()).hexdigest()
@@ -86,10 +87,12 @@ def login():
     user = db.users.find_one({"username": username, "password": password})
 
     if user:
+        user['_id'] = str(user['_id'])  # Convert ObjectId to string before storing in session
         session['login_user'] = user
         return redirect(url_for('my_lists')) 
     else:
         return "Invalid username or password", 401
+
 
 
 @app.route('/new_list/<list_id>', methods=('GET', 'POST'))
@@ -227,7 +230,7 @@ def start_app():
         port = int(os.environ.get('PORT', 5000))
         # For production, ensure that debug is set to False
         app.run(debug=False, host="0.0.0.0", port=port)
-        
+
 start_app()
 
 #test3
