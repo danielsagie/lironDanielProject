@@ -76,9 +76,9 @@ jobs:
         run: >
           git clone https://github.com/lironderi/project_conf
 
-          git config --global user.email "liron.deri3@outlook.com"
+          git config --global user.email "danielsagie688@gmail.com"
 
-          git config --global user.name "lironderi"
+          git config --global user.name "danielsagie"
 
           pwd
 
