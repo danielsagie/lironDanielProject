@@ -63,6 +63,15 @@ jobs:
           push: true
           tags: lironderi/market-app:v1.0.${{ github.run_id }}
 
+      - name: notify liron
+        uses: cinotify/github-action@main
+        with: 
+          to: ${{vars.EMAIL}}
+          subject: upload docker image
+          body: new version is v1.0.${{ github.run_id }}
+  
+              
+
       - name: Trigger ArgoCD Sync
         run: >
           git clone https://github.com/lironderi/project_conf
