@@ -74,7 +74,7 @@ jobs:
 
       - name: Trigger ArgoCD Sync
         run: >
-          git clone https://github.com/lironderi/project_conf
+          git clone https://github.com/danielsagie/project_conf
 
           git config --global user.email "danielsagie688@gmail.com"
 
