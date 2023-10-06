@@ -79,7 +79,6 @@ def login_page():
 
 # function that check if user exist and create a session
 @app.route('/login', methods=['POST'])
-@app.route('/login', methods=['POST'])
 def login():
     username = request.form.get('username')
     password = hashlib.sha256(request.form.get('password').encode()).hexdigest()
