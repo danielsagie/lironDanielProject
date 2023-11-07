@@ -73,24 +73,17 @@ jobs:
               
 
       - name: Trigger ArgoCD Sync
-        run: >
+        run: |
           git clone https://github.com/danielsagie/project_conf
-
           git config --global user.email "danielsagie688@gmail.com"
-
           git config --global user.name "danielsagie"
-
           pwd
-
           cd project_conf
-
           sed -i "s|image: lironderi/market-app:v1.0.*|image: lironderi/market-app:v1.0.${{ github.run_id }}|" k8s_conf/deployment.yaml
-
           git add k8s_conf/deployment.yaml
-
           git commit -m "Trigger ArgoCD Sync"
-
           git push -f https://${{ secrets.GH_PAT }}@github.com/danielsagie/project_conf
+
 
   notify:
     needs:
