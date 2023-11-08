@@ -92,7 +92,7 @@ jobs:
       - name: Send failure notification for tests
         uses: cinotify/github-action@main
         with:
-          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          to: ${{ vars.EMAIL }}
           subject: Tests Failed
           body: One or more tests have failed, please check this on GitHub Actions.
 
@@ -106,6 +106,22 @@ jobs:
       - name: Send failure notification for workflow
         uses: cinotify/github-action@main
         with:
-          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          to: ${{ vars.EMAIL }}
           subject: Workflow failed
           body: The workflow failed, please check this on GitHub Actions.
+          
+
+  notify_image_change:
+    needs:
+      - running_tests
+      - docker_build_and_push
+    if: ${{ success() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send liron mail
+        uses: cinotify/github-action@main
+        with:
+          to: liron.deri3@outlook.com
+          subject: Version Changed
+          body: new image has been uploaded. version number - v1.0.${{ github.run_id }}
+
