@@ -29,7 +29,7 @@ except Exception:
 @app.route('/', methods=('GET', 'POST'))
 @app.route('/home', methods=('GET', 'POST'))
 def home_page():
-    return render_template('index.html!!')
+    return render_template('index.html!!!')
 
 
 # about page
