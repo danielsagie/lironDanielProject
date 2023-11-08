@@ -45,6 +45,7 @@ jobs:
 
 
   docker_build_and_push:
+    if: ${{ always() }}
     needs: running_tests
     runs-on: ubuntu-latest
     steps:
