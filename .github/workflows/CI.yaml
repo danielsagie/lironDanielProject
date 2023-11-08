@@ -45,9 +45,9 @@ jobs:
 
 
   docker_build_and_push:
+    if: ${{ success() }}
     needs: running_tests
     runs-on: ubuntu-latest
-    if: ${{ success() }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
